@@ -1,0 +1,103 @@
+\documentclass{jsarticle}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\DeclareMathOperator{\R}{\mathbb{R}}
+\DeclareMathOperator{\N}{\mathbb{N}}
+
+\theoremstyle{definition}
+\newtheorem{thm}{定理}[section]
+\newtheorem{defn}[thm]{定義}
+\newtheorem{lem}[thm]{補題}
+\newtheorem{example}{例}
+
+\title{点推定の基礎(最尤法からAICまで)}
+\author{erutuf}
+
+\begin{document}
+
+\maketitle
+
+\section{準備}
+
+まず、確率論や統計学の基礎事項について準備を行う。
+
+\subsection{確率論}
+
+この記事では測度論に基いて数学的に確率の概念を導入する。
+
+\begin{defn}
+  $\Omega$ を集合、$\mathcal{B}$ を $\Omega$ の部分集合族とする。$\mathcal{B}$ が完全加法族であるとは以下の条件をみたすときに言う：
+  \begin{enumerate}
+    \item $\emptyset \in \mathcal{B}$
+    \item $A_1, A_2 \in \mathcal{B}$ のとき $A_1 \cap A_2 \in \mathcal{B}$
+    \item $A \in \mathcal{B}$ のとき $A^c\ (= \Omega \setminus A) \in \mathcal{B}$
+    \item $A_1,\ A_2,\ldots \in \mathcal{B}$ のとき $\bigcup_{k=1}^\infty A_k \in \mathcal{B}$.
+  \end{enumerate}
+また、集合とその完全加法族の組 $(\Omega, \mathcal{B})$ を可測空間と呼ぶ。
+\end{defn}
+
+\begin{defn}
+  $(\Omega, \mathcal{B})$ を可測空間とする。以下の条件をみたす $\mathcal{B}$ 上の関数 $P : \mathcal{B} \rightarrow [0, 1]$ を確率と呼ぶ：
+  \begin{enumerate}
+    \item $P(\Omega) = 1$
+    \item $B_1,\ B_2, \ldots \in \mathcal{B}$ が $B_i \cap B_j = \emptyset \ (i \neq j)$ をみたすとき $P(\bigcup_{k=1}^\infty B_k) = \sum_{k=1}^\infty P(B_k)$.
+  \end{enumerate}
+可測空間と確率の組 $(\Omega, \mathcal{B}, P)$ を確率空間と呼ぶ。
+\end{defn}
+
+可測空間の基本的な例として、$(\R, \mathcal{B}(\R))$ がある。ここで、$\mathcal{B}(S)$ は 位相空間 $S$ の任意の開集合を含む最小の完全加法族であり、Borel 集合族と呼ばれる。
+
+\begin{defn}
+  $(\Omega, \mathcal{B})$ を可測空間とする。関数 $X : \Omega \rightarrow \R$ が $(\Omega, \mathcal{B})$ 上の可測関数であるとは、任意の $a \in \R$ に対して $X^{-1}(\{\omega \in \Omega \mid X(\omega) \le a\}) \in \mathcal{B}$ が成り立つときに言う。また、確率空間上の可測関数のことを確率変数と呼ぶ。
+\end{defn}
+
+慣習的に、集合 $\left\{\omega \in \Omega \mid X(\omega) \le a\right\}$ の確率 $P(\left\{\omega \in \Omega \mid X(\omega) \le a\right\})$ を $P(X \le a)$ と略記する。$P(X < a)$、$P(X \ge a)$、$P(X > a)$ などについても同様である。また、可測関数 $f$ と確率変数 $X$ の合成 $f \circ X$ のことをしばしば $f(X)$ と書く。
+
+\begin{defn}
+  確率変数 $X : \Omega \rightarrow \R$ に対し、その累積分布関数(culminative distribution function, cdf) $F_X : \R \rightarrow \R$ を以下で定義する：
+  \[
+    F_X(a) = P(X \le a)
+  \]
+
+  また、cdf $F_X$ が関数 $p_X : \R \rightarrow \R_{\ge 0}$ を用いて
+  \[
+    F_X(a) = \int_{-\infty}^a p_X(x)dx
+  \]
+  と書けるとき $p_X$ を確率密度関数(probability density function, pdf)と呼ぶ。
+\end{defn}
+
+確率変数 $X$ に対しその期待値 $E\left[X\right]$ を
+\[
+  E\left[X\right] = \int_{-\infty}^\infty xp_X(x)dx
+\]
+で定める。また、可測関数 $f : \R \rightarrow \R$ に対して $f(X)$ の期待値を
+\[
+  E\left[f(X)\right] = \int_{-\infty}^\infty f(x)p_X(x)dx
+\]
+で定める。
+
+(TODO)
+
+\subsection{統計量}
+
+可測関数 $T : \R^n \rightarrow \R$、無作為標本 $X = (X_1,\ldots,X_n)$ に対し、$T(X)$ を統計量と呼ぶ。統計量の例として、標本平均
+\[
+  T(X) = \bar{X} = \frac{1}{n}\sum_{i=1}^n X_i
+\]
+がある。
+
+確率ベクトル $\mathbf{X} = (X_1 ,\ldots, X_n)$ の jpdf を $p(x, \theta) = f^\theta(x)$ とする。統計量 $T(\mathbf{X})$ が $\theta$ に関して情報損失を起こさないという概念を以下のように定式化する：
+\begin{defn}
+  統計量 $T(\mathbf{X})$、実現値 $t$ に対し $\mathbf X$ の cpdf $f^\theta(x\mid t)$ が $\theta$ に依存しないとき $T$ は $\theta$ に対する十分統計量であると言う。
+\end{defn}
+
+\section{情報量、最尤推定}
+
+\section{バイアス、一様最小分散}
+
+\section{赤池情報量基準}
+
+\end{document}
